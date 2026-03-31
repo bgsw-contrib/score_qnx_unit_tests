@@ -28,6 +28,20 @@ _get_test_and_data = rule(
     },
 )
 
+def _get_so_libs_impl(ctx):
+    so_files = []
+    for file in ctx.attr.src[DefaultInfo].data_runfiles.files.to_list():
+        if file.basename.endswith(".so") or ".so." in file.basename:
+            so_files.append(file)
+    return [DefaultInfo(files = depset(so_files))]
+
+_get_so_libs = rule(
+    implementation = _get_so_libs_impl,
+    attrs = {
+        "src": attr.label(providers = [CcInfo]),
+    },
+)
+
 def cc_test_qnx(name, cc_test, excluded_tests_filter = None):
     """This macro is supposed to compile and run QNX unit tests
 
@@ -63,6 +77,13 @@ def cc_test_qnx(name, cc_test, excluded_tests_filter = None):
         tags = ["manual"],
     )
 
+    _get_so_libs(
+        name = "%s_so_libs" % name,
+        src = cc_test,
+        testonly = True,
+        tags = ["manual"],
+    )
+
     pkg_files(
         name = "%s_test_and_runfiles" % name,
         srcs = [
@@ -87,11 +108,23 @@ def cc_test_qnx(name, cc_test, excluded_tests_filter = None):
         attributes = pkg_attributes(mode = "0644"),
     )
 
+    pkg_files(
+        name = "%s_so_libs_pkg" % name,
+        srcs = [
+            ":{}_so_libs".format(name),
+        ],
+        prefix = "libs",
+        testonly = True,
+        tags = ["manual"],
+        attributes = pkg_attributes(mode = "0755"),
+    )
+
     pkg_filegroup(
         name = "%s_pkg" % name,
         srcs = [
             ":%s_test_and_runfiles" % name,
             ":%s_filter_file" % name,
+            ":%s_so_libs_pkg" % name,
         ],
         testonly = True,
         tags = ["manual"],
@@ -108,14 +141,14 @@ def cc_test_qnx(name, cc_test, excluded_tests_filter = None):
 
     sh_test(
         name = name,
-        srcs = ["//:x86_64_qnx8/run_qemu.sh"],
+        srcs = ["@qnx_unit_tests//:x86_64_qnx8/run_qemu.sh"],
         args = [
-            "$(location //:init)",
+            "$(location @qnx_unit_tests//:init)",
             "$(location :%s_pkg_tar)" % name,
         ],
         data = [
             ":%s_pkg_tar" % name,
-            "//:init",
+            "@qnx_unit_tests//:init",
         ],
         timeout = "moderate",
         size = "medium",
@@ -127,19 +160,18 @@ def cc_test_qnx(name, cc_test, excluded_tests_filter = None):
             "manual",
             "microvm_qnx_test",
         ],
-        flaky = True,
     )
 
     sh_binary(
         name = "%s_shell" % name,
-        srcs = ["//:x86_64_qnx8/run_qemu_shell.sh"],
+        srcs = ["@qnx_unit_tests//:x86_64_qnx8/run_qemu_shell.sh"],
         args = [
-            "$(location //:init_shell)",
+            "$(location @qnx_unit_tests//:init_shell)",
             "$(locations :%s_pkg_tar)" % name,
         ],
         data = [
             ":%s_pkg_tar" % name,
-            "//:init_shell",
+            "@qnx_unit_tests//:init_shell",
         ],
         testonly = True,
         target_compatible_with = [

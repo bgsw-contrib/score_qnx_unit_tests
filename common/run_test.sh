@@ -29,6 +29,9 @@ fi
 
 export GTEST_FILTER="$(cat /opt/tests/cc_test_qnx_filters.txt)"
 
+cp -R /opt/tests/libs /persistent/unit_tests/
+export LD_LIBRARY_PATH="/persistent/unit_tests/libs:${LD_LIBRARY_PATH}"
+
 cd /persistent/unit_tests
 cp -f /opt/tests/cc_test_qnx cc_test_qnx
 chmod +x cc_test_qnx

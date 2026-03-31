@@ -31,7 +31,7 @@ bazel_dep(name = "score_bazel_platforms", version = "0.1.2")
 # QCC C++ cross-compiler toolchain
 bazel_dep(name = "score_bazel_cpp_toolchains", version = "0.3.1")
 
-gcc = use_extension("@score_bazel_cpp_toolchains//extensions:gcc.bzl", "gcc")
+gcc = use_extension("@score_bazel_cpp_toolchains//extensions:gcc.bzl", "gcc", dev_dependency = True)
 gcc.toolchain(
     name = "score_gcc_x86_64_toolchain",
     target_cpu = "x86_64",
@@ -57,7 +57,7 @@ git_override(
     remote = "https://github.com/eclipse-score/rules_imagefs.git",
 )
 
-imagefs = use_extension("@score_rules_imagefs//extensions:imagefs.bzl", "imagefs")
+imagefs = use_extension("@score_rules_imagefs//extensions:imagefs.bzl", "imagefs", dev_dependency = True)
 imagefs.toolchain(
     name = "score_qnx_x86_64_ifs_toolchain",
     sdp_to_import = "@score_qcc_x86_64_toolchain_pkg",

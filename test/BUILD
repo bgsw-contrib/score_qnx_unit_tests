@@ -17,7 +17,6 @@ cc_test(
     name = "main_cpp",
     srcs = ["main.cpp"],
     data = ["data.txt"],
-    linkstatic = True,
     deps = [
         "@googletest//:gtest",
         "@googletest//:gtest_main",
