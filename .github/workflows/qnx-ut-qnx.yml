@@ -49,7 +49,7 @@ jobs:
           SCORE_QNX_USER: ${{ secrets.SCORE_QNX_USER }}
           SCORE_QNX_PASSWORD: ${{ secrets.SCORE_QNX_PASSWORD }}
         run: |
-          bazel test --config=qnx-x86_64 //test:main_cpp_qnx
+          bazel test --config=qnx-x86_64 //test/...
       - name: Cleanup QNX License
         if: always()
         run: |
