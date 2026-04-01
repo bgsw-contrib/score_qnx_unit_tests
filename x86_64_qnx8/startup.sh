@@ -31,9 +31,13 @@ waitfor /dev/fsnotify
 devb-ram ram capacity=1 blk ramdisk=256m,cache=512k,vnode=256
 waitfor /dev/ram0
 
-mkqnx6fs -q /dev/ram0
+while ! mkqnx6fs -q /dev/ram0; do
+    echo "Failed to create QNX6 filesystem on /dev/ram0. Retrying..."
+done
 
-mount -t qnx6 /dev/ram0 /persistent
+while ! mount -t qnx6 /dev/ram0 /persistent; do
+    echo "Failed to mount /dev/ram0 on /persistent. Retrying..."
+done
 
 # Mount host shared directory via virtio-9p
 while ! mount_virtio9p -o transport=pci none /opt/tests; do

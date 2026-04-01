@@ -157,7 +157,6 @@ def cc_test_qnx(name, cc_test, excluded_tests_filter = None):
         ],
         tags = [
             "cpu:2",
-            "manual",
             "microvm_qnx_test",
         ],
     )
