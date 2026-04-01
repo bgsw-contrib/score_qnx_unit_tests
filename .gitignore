@@ -53,6 +53,7 @@ dkms.conf
 
 user.bazelrc
 /bazel-*
+/examples/bazel-*
 !zuul.d/
 
 # Ignore project files from JetBrains IDEs: PyCharm, IntelliJ IDEA, CLion, WebStorm

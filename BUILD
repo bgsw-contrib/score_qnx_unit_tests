@@ -110,6 +110,7 @@ copyright_checker(
     name = "copyright",
     srcs = [
         "common",
+        "examples",
         "test",
         "third_party",
         "tools",

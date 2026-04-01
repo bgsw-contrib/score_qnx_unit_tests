@@ -10,20 +10,3 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 # *******************************************************************************
-load("@rules_cc//cc:defs.bzl", "cc_test")
-load("@score_qnx_unit_tests//:cc_test_qnx.bzl", "cc_test_qnx")
-
-cc_test(
-    name = "main_cpp",
-    srcs = ["main.cpp"],
-    data = ["data.txt"],
-    deps = [
-        "@googletest//:gtest",
-        "@googletest//:gtest_main",
-    ],
-)
-
-cc_test_qnx(
-    name = "main_cpp_qnx",
-    cc_test = ":main_cpp",
-)
