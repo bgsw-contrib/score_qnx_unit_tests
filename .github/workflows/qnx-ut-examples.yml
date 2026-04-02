@@ -10,19 +10,32 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 # *******************************************************************************
-name: QNX Unit Tests Examples - QNX8 x86-64
 on:
   pull_request:
     types: [opened, reopened, synchronize]
   merge_group:
     types: [checks_requested]
 jobs:
-  qnx-ut-examples-build-all:
+  workflow-approval:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     environment: workflow-approval
+    steps:
+      - run: echo "Workflow approved"
+  qnx-ut-examples-build-and-test:
+    needs: workflow-approval
+    if: ${{ !cancelled() && (needs.workflow-approval.result == 'success' || needs.workflow-approval.result == 'skipped') && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     defaults:
       run:
-        working-directory: ./examples
+        working-directory: ${{ matrix.working-directory }}
+    strategy:
+      matrix:
+        bazel-config: [qnx-x86_64, qnx-aarch64]
+        working-directory: [., ./examples]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
@@ -51,9 +64,19 @@ jobs:
           SCORE_QNX_USER: ${{ secrets.SCORE_QNX_USER }}
           SCORE_QNX_PASSWORD: ${{ secrets.SCORE_QNX_PASSWORD }}
         run: |
-          bazel test --config=qnx-x86_64 //test/...
+          bazel test --config=${{ matrix.bazel-config }} //test/...
       - name: Cleanup QNX License
         if: always()
         run: |
           rm -rf /opt/score_qnx
           rm -rf "${HOME}/.cache/bazel"
+  qnx-ut-examples-build-all:
+    runs-on: ubuntu-latest
+    needs:
+      - qnx-ut-examples-build-and-test
+    if: always()
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "Some jobs failed or were cancelled."
+          exit 1
