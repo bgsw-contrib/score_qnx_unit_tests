@@ -28,7 +28,7 @@ def _get_test_and_data_impl(ctx):
 
     # Rename binary to canonical name so the IFS image has the expected path.
     # The test runner script (run_test.sh) expects the binary at /opt/tests/cc_test_qnx.
-    src_binary = ctx.attr.src[DefaultInfo].files.to_list()[0]
+    src_binary = src_files[0]
     renamed_binary = ctx.actions.declare_file(ctx.attr.name + "_out/cc_test_qnx")
     ctx.actions.symlink(output = renamed_binary, target_file = src_binary)
 
