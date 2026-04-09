@@ -14,21 +14,23 @@
 
 load("@score_qnx_unit_tests//src:test_qnx.bzl", "test_qnx")
 
-def cc_test_qnx(name, cc_test, excluded_tests_filter = None):
+def cc_test_qnx(name, cc_test, excluded_tests_filter = None, flaky = False):
     """Compile and run a C++ QNX unit test in a QEMU microVM.
 
     Args:
       name: Test name
       cc_test: cc_test target
       excluded_tests_filter: list of tests to be excluded from execution.
+      flaky: whether the test should be marked as flaky.
     """
-    test_qnx(name = name, test = cc_test, excluded_tests_filter = excluded_tests_filter)
+    test_qnx(name = name, test = cc_test, excluded_tests_filter = excluded_tests_filter, flaky = flaky)
 
-def rust_test_qnx(name, rust_test):
+def rust_test_qnx(name, rust_test, flaky = False):
     """Compile and run a Rust QNX unit test in a QEMU microVM.
 
     Args:
       name: Test name
       rust_test: rust_test target
+      flaky: whether the test should be marked as flaky.
     """
-    test_qnx(name = name, test = rust_test)
+    test_qnx(name = name, test = rust_test, flaky = flaky)
