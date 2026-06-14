@@ -55,7 +55,7 @@ _get_so_libs = rule(
     },
 )
 
-def _test_qnx(name, test, excluded_tests_filter, flaky):
+def _test_qnx(name, test, excluded_tests_filter, flaky, tags):
     """Shared implementation for compiling and running QNX unit tests.
 
     Args:
@@ -63,6 +63,7 @@ def _test_qnx(name, test, excluded_tests_filter, flaky):
       test: cc_test or rust_test target
       excluded_tests_filter: list of tests to be excluded from execution.
       flaky: whether the test is flaky.
+      tags: tags that are forwarded to the test target
     """
     excluded_tests_filter = excluded_tests_filter if excluded_tests_filter else []
 
@@ -168,7 +169,7 @@ def _test_qnx(name, test, excluded_tests_filter, flaky):
         target_compatible_with = [
             "@platforms//os:qnx",
         ],
-        tags = [
+        tags = tags + [
             "cpu:2",
             "microvm_qnx_test",
         ],
@@ -196,7 +197,7 @@ def _test_qnx(name, test, excluded_tests_filter, flaky):
         tags = ["manual"],
     )
 
-def test_qnx(name, test, excluded_tests_filter = None, flaky = False):
+def test_qnx(name, test, excluded_tests_filter = None, flaky = False, tags = []):
     """Compile and run a QNX unit test in a QEMU microVM.
 
     Supports both cc_test and rust_test targets (any target providing
@@ -212,4 +213,4 @@ def test_qnx(name, test, excluded_tests_filter = None, flaky = False):
         *FooTest.* - runs all non FooTest tests.
       flaky: whether the test should be marked as flaky.
     """
-    _test_qnx(name, test, excluded_tests_filter, flaky)
+    _test_qnx(name, test, excluded_tests_filter, flaky, tags)
