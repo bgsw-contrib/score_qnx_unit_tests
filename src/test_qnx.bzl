@@ -163,6 +163,9 @@ def _test_qnx(name, test, excluded_tests_filter, flaky, tags):
         data = [
             ":%s_pkg_tar" % name,
             "@score_qnx_unit_tests//src:init",
+            # Include the original test target so Bazel's coverage pipeline can
+            # discover .gcno files via InstrumentedFilesInfo for `bazel coverage`.
+            test,
         ],
         timeout = "moderate",
         size = "medium",
