@@ -155,6 +155,10 @@ fi
 
 if [ -f "${FSDEV_PATH}/test_results/coverage.tar.gz" ]; then
     tar -xf ${FSDEV_PATH}/test_results/coverage.tar.gz --no-same-owner --no-same-permissions -C "${TEST_UNDECLARED_OUTPUTS_DIR}"
+    if [ -n "${COVERAGE_DIR:-}" ]; then
+        # Additionally extract to COVERAGE_DIR for Bazel's collect_cc_coverage.sh
+        tar -xf ${FSDEV_PATH}/test_results/coverage.tar.gz --no-same-owner --no-same-permissions -C "${COVERAGE_DIR}"
+    fi
 fi
 
 if [ -f "${FSDEV_PATH}/test_results/returncode.log" ]; then

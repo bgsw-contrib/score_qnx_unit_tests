@@ -13,6 +13,10 @@
 # SPDX-License-Identifier: Apache-2.0
 # *******************************************************************************
 
+# GCOV_PREFIX_STRIP=3 strips the /proc/self/cwd/ prefix that QCC embeds as the
+# working directory in cross-compiled binaries. This leaves the relative path
+# (e.g. bazel-out/k8-fastbuild/bin/test/_objs/...) which matches what Bazel's
+# collect_cc_coverage.sh expects in $COVERAGE_DIR.
 export GCOV_PREFIX=/persistent/coverage
 export GCOV_PREFIX_STRIP=3
 

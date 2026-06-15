@@ -35,7 +35,7 @@ echo "Test processes finished"
 if [ -d "/persistent/coverage" ]; then
     chmod -R 777 /persistent/coverage
     echo "Creating coverage archive..."
-    time toybox tar -czf /opt/tests/test_results/coverage.tar.gz --owner=0 --group=0 -C /persistent/ coverage
+    time toybox tar -czf /opt/tests/test_results/coverage.tar.gz --owner=0 --group=0 -C /persistent/coverage .
     echo "Coverage archive created!"
 fi
 
