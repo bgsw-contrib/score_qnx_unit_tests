@@ -15,10 +15,7 @@
 
 # Shared QEMU launch helpers sourced by x86_64 and aarch64 test scripts.
 
-QEMU_EXPECTED_VERSION="8.2.2"
-
-# Verify the QEMU binary is on PATH; warn on version mismatch (not a hard
-# failure, so older or newer QEMU is not locked out).
+# Verify the QEMU binary is on PATH and log the detected version.
 qemu_check() {
     local binary="$1"
     command -v "${binary}" >/dev/null 2>&1 || {
@@ -27,8 +24,8 @@ qemu_check() {
     }
     local version
     version="$("${binary}" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)" || true
-    if [ -n "${version}" ] && [ "${version}" != "${QEMU_EXPECTED_VERSION}" ]; then
-        echo "WARNING: ${binary} ${version} detected, CI uses ${QEMU_EXPECTED_VERSION}" >&2
+    if [ -n "${version}" ]; then
+        echo "${binary} version ${version} detected"
     fi
 }
 

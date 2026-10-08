@@ -28,12 +28,12 @@ fi
 # serial UART (one slow trap per character). Redirecting to the RAM disk
 # (/persistent) is an order of magnitude faster for chatty tests. The host
 # cats the captured log back to stdout after the run so --test_output still
-# shows it. Set QEMU_STREAM_OUTPUT=1 to stream live instead (for interactive
-# debugging at the cost of speed).
-if [ "${QEMU_STREAM_OUTPUT:-0}" = "1" ]; then
-    /persistent/unit_tests/cc_test_qnx "$@"
-else
+# shows it. Set QEMU_BUFFER_OUTPUT=1 to redirect to RAM disk for speed
+# (logs still visible in GH Actions via host cat). Default streams live.
+if [ "${QEMU_BUFFER_OUTPUT:-0}" = "1" ]; then
     /persistent/unit_tests/cc_test_qnx "$@" > /persistent/test_output.log 2>&1
+else
+    /persistent/unit_tests/cc_test_qnx "$@"
 fi
 
 echo "$?" > /persistent/returncode.log

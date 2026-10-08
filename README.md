@@ -30,6 +30,7 @@ qnx_unit_tests/
 │   │   └── tools.build
 │   └── common/                 # Shared scripts and drivers
 │       ├── prepare_test.sh
+│       ├── qemu_common.sh
 │       ├── run_test.sh
 │       └── virtio9p/           # 9P2000.L resource manager for host-guest file sharing
 ├── third_party/
@@ -219,7 +220,7 @@ cc_test_qnx(
 |---|---|---|
 | `DISABLE_KVM` | `0` | Set to `1` to disable KVM acceleration |
 | `QEMU_CPU` | aarch64: `max`. x86_64 with KVM: vendor-detected (`Icelake-Server` on Intel hosts, `EPYC-Milan` on AMD, `host` otherwise). x86_64 without KVM (`DISABLE_KVM=1` or no `/dev/kvm`), and cross-arch emulation (e.g. an aarch64 host running x86_64-qnx): always `max`, since KVM and host-vendor matching don't apply | QEMU CPU model (e.g. `Cascadelake-Server-v5`) |
-| `QEMU_STREAM_OUTPUT` | `0` | Set to `1` to stream test output live over the serial console (slow; for interactive debugging). Default redirects to a file on the guest RAM disk for speed. Must be forwarded via `QNX_FORWARD_ENV`. |
+| `QEMU_BUFFER_OUTPUT` | `0` | Set to `1` to redirect test output to the guest RAM disk for speed (logs still visible via host cat). Default streams live over serial. Must be forwarded via `QNX_FORWARD_ENV`. |
 | `FSDEV_PATH` | (auto) | Override the virtio-9p shared directory path |
 
 For tests, pass via `--test_env`:
