@@ -45,8 +45,6 @@ qemu_setup_accel() {
             if [[ "${host_arch}" == "x86_64" ]]; then
                 DISABLE_KVM="${DISABLE_KVM:-0}"
                 if [[ -e /dev/kvm && -r /dev/kvm ]] && [[ "${DISABLE_KVM}" == 0 ]]; then
-                    # "host" (pass through the physical CPU) only works with
-                    # KVM; the TCG fallback below needs an emulatable model.
                     case "$(grep -m1 '^vendor_id' /proc/cpuinfo 2>/dev/null)" in
                         *AuthenticAMD*) QEMU_CPU="${QEMU_CPU:-EPYC-Milan}" ;;
                         *GenuineIntel*) QEMU_CPU="${QEMU_CPU:-Icelake-Server}" ;;
@@ -80,28 +78,34 @@ qemu_setup_accel() {
 }
 
 # Write vars named in QNX_FORWARD_ENV as an `export NAME='value'` fragment at
-# <fsdev_path>/cc_test_qnx_env.sh, sourced by prepare_test.sh in the guest: the
-# shell in the IFS cannot iterate a file line by line (its read builtin
-# consumes the whole file on the first call), so a read loop would only ever
-# export the first variable.
-# Usage: qemu_write_forwarded_env <fsdev_path>
+# <fsdev_path>/cc_test_qnx_env.sh, sourced by prepare_test.sh in the guest.
+# Snapshot selected values before introducing helper locals, because Bash uses
+# dynamic scoping and locals can shadow caller variables of the same name.
 qemu_write_forwarded_env() {
+    local names="${QNX_FORWARD_ENV:-}"
+    local values=()
+    local requested_name
+    for requested_name in ${names//,/ }; do
+        if [[ -n "${!requested_name+x}" ]]; then
+            values+=("${!requested_name}")
+        else
+            values+=("__QNX_FORWARD_ENV_UNSET__")
+        fi
+    done
+
     local fsdev_path="$1"
     local env_file="${fsdev_path}/cc_test_qnx_env.sh"
-    # Expands to the four characters '\'' — closes the quote, escapes one,
-    # reopens — to quote arbitrary values for the guest shell.
     local sq_escape="'\\''"
-
-    # A caller-supplied fsdev_path may be reused across runs, so never let a
-    # previous run's variables leak into this one.
     rm -f "${env_file}"
-    if [[ -n "${QNX_FORWARD_ENV:-}" ]]; then
+    if [[ -n "${names}" ]]; then
         : > "${env_file}"
-        local var
-        for var in ${QNX_FORWARD_ENV//,/ }; do
-            if [[ -n "${!var+x}" ]]; then
-                printf "export %s='%s'\n" "${var}" "${!var//\'/${sq_escape}}" >> "${env_file}"
+        local index=0 escaped_value
+        for requested_name in ${names//,/ }; do
+            if [[ "${values[index]}" != "__QNX_FORWARD_ENV_UNSET__" ]]; then
+                escaped_value="$(printf '%s' "${values[index]}" | sed "s/'/'\\\\\\''/g")"
+                printf "export %s='%s'\n" "${requested_name}" "${escaped_value}" >> "${env_file}"
             fi
+            ((index += 1))
         done
     fi
 }
@@ -109,15 +113,9 @@ qemu_write_forwarded_env() {
 # Create or reuse the virtio-9p shared directory.
 qemu_setup_fsdev() {
     if [[ -z "${FSDEV_PATH:-}" ]]; then
-        FSDEV_PATH=$(mktemp -d)
+        FSDEV_PATH="$(mktemp -d)"
         FSDEV_PATH_CREATED=1
     else
-        # A caller-supplied FSDEV_PATH is reusable across runs, and may point
-        # at a pre-existing directory the caller doesn't want wiped wholesale.
-        # Clear only the entries a launcher actually stages here (test
-        # results, forwarded env, copied binary/runfiles/libs, and a leftover
-        # extra-args fragment from a run that had args), never the directory
-        # itself.
         local entry
         for entry in test_results cc_test_qnx cc_test_qnx.runfiles \
                 cc_test_qnx_filters.txt cc_test_qnx_extra_args.sh \
@@ -136,16 +134,12 @@ qemu_cleanup_fsdev() {
 }
 
 # Extract test results from the virtio-9p share and exit with the test's code.
-# Usage: qemu_extract_results <fsdev_path>
 qemu_extract_results() {
     local fsdev_path="$1"
     if [ -f "${fsdev_path}/test_results/test.xml" ]; then
         cp "${fsdev_path}/test_results/test.xml" "${XML_OUTPUT_FILE}"
     fi
     if [ -f "${fsdev_path}/test_results/test_output.log" ]; then
-        # Apply the same control-character/CR filtering as the live QEMU
-        # pipelines below, so buffered (non-streamed) output can't dump raw
-        # ANSI/control bytes into the Bazel log.
         sed 's/[^[:print:]]//g; s/\r//' "${fsdev_path}/test_results/test_output.log"
     fi
     if [ -f "${fsdev_path}/test_results/coverage.tar.gz" ]; then
@@ -161,7 +155,5 @@ qemu_extract_results() {
         echo "ERROR: Test return code log not found!" >&2
         rc=1
     fi
-    # An empty or non-numeric returncode would otherwise make `exit` return 0,
-    # silently masking test failures. Default to 1 so a corrupt log fails.
     exit "${rc:-1}"
 }
