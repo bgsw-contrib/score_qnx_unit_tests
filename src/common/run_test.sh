@@ -32,11 +32,13 @@ fi
 # (logs still visible in GH Actions via host cat). Default streams live.
 if [ "${QEMU_BUFFER_OUTPUT:-0}" = "1" ]; then
     /persistent/unit_tests/cc_test_qnx "$@" > /persistent/test_output.log 2>&1
+    test_rc=$?
 else
     /persistent/unit_tests/cc_test_qnx "$@"
+    test_rc=$?
 fi
 
-echo "$?" > /persistent/returncode.log
+echo "${test_rc}" > /persistent/returncode.log
 
 mkdir /opt/tests/test_results
 
