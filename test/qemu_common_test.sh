@@ -291,10 +291,10 @@ PATH="$mock_bin:$PATH" bash -c '
     source "$1"
     uname() { printf aarch64; }
     qemu_setup_accel aarch64 >/dev/null
-    [[ "$ACCEL" == "-machine virt -cpu max" ]]
+    [[ "$ACCEL" == "-machine virt -cpu max" ]] || exit 1
     QEMU_CPU=cortex-a72
     qemu_setup_accel aarch64 >/dev/null
-    [[ "$ACCEL" == "-machine virt -cpu cortex-a72" ]]
+    [[ "$ACCEL" == "-machine virt -cpu cortex-a72" ]] || exit 1
 ' _ "$1" || fail "aarch64 acceleration setup/default/override failed"
 
 # x86 guest on a non-x86 host uses TCG/max; explicit CPU override is preserved.
@@ -302,10 +302,10 @@ PATH="$mock_bin:$PATH" bash -c '
     source "$1"
     uname() { printf aarch64; }
     qemu_setup_accel x86_64 >/dev/null
-    [[ "$ACCEL" == "-cpu max" && "$QEMU_CPU" == max ]]
+    [[ "$ACCEL" == "-cpu max" && "$QEMU_CPU" == max ]] || exit 1
     QEMU_CPU=Skylake-Client
     qemu_setup_accel x86_64 >/dev/null
-    [[ "$ACCEL" == "-cpu Skylake-Client" ]]
+    [[ "$ACCEL" == "-cpu Skylake-Client" ]] || exit 1
 ' _ "$1" || fail "cross-architecture x86 acceleration setup failed"
 
 # Host architecture other than x86_64 avoids depending on the real /dev/kvm
