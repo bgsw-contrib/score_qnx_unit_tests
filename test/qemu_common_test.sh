@@ -34,23 +34,27 @@ assert_file_content() {
 # Round-trip values with trailing newlines, shell metacharacters, helper-name
 # collisions, empty strings, and the old unset-marker text.
 requested_names=(
-    _qnx_forward_captured_names
-    _qnx_forward_captured_values
-    _qnx_forward_captured_set
-    _qnx_forward_requested
-    _qnx_forward_target
-    _qnx_forward_output
+    _qnx_names
+    _qnx_values
+    _qnx_set
+    _qnx_requested
+    _qnx_destination
+    _qnx_output
+    _qnx_index
+    _qnx_common_name
     TRAILING_NEWLINES
     QUOTED_VALUE
     EMPTY_VALUE
     SENTINEL_VALUE
 )
-_qnx_forward_captured_names="helper-local names"
-_qnx_forward_captured_values=$'final line\n\n'
-_qnx_forward_captured_set="__QNX_FORWARD_ENV_UNSET__"
-_qnx_forward_requested="requested name"
-_qnx_forward_target="caller path"
-_qnx_forward_output="caller env file"
+_qnx_names="caller names value"
+_qnx_values=$'final line\n\n'
+_qnx_set="__QNX_FORWARD_ENV_UNSET__"
+_qnx_requested="requested name"
+_qnx_destination="caller path"
+_qnx_output="caller env file"
+_qnx_index="index value"
+_qnx_common_name="caller private-name value"
 TRAILING_NEWLINES=$'value\n\n\n'
 QUOTED_VALUE="single' quote; \$(false) \\\\ \$HOME"
 EMPTY_VALUE=""
@@ -74,12 +78,14 @@ bash -c '
             exit 1
         }
     }
-    assert_equal _qnx_forward_captured_names "helper-local names"
-    assert_equal _qnx_forward_captured_values $'"'"'final line\n\n'"'"'
-    assert_equal _qnx_forward_captured_set "__QNX_FORWARD_ENV_UNSET__"
-    assert_equal _qnx_forward_requested "requested name"
-    assert_equal _qnx_forward_target "caller path"
-    assert_equal _qnx_forward_output "caller env file"
+    assert_equal _qnx_names "caller names value"
+    assert_equal _qnx_values $'"'"'final line\n\n'"'"'
+    assert_equal _qnx_set "__QNX_FORWARD_ENV_UNSET__"
+    assert_equal _qnx_requested "requested name"
+    assert_equal _qnx_destination "caller path"
+    assert_equal _qnx_output "caller env file"
+    assert_equal _qnx_index "index value"
+    assert_equal _qnx_common_name "caller private-name value"
     assert_equal TRAILING_NEWLINES $'"'"'value\n\n\n'"'"'
     assert_equal QUOTED_VALUE "single'"'"' quote; \$(false) \\\\ \$HOME"
     assert_equal EMPTY_VALUE ""

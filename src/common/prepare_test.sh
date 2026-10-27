@@ -43,9 +43,9 @@ cp -R /opt/tests/libs /persistent/unit_tests/
 export LD_LIBRARY_PATH="/persistent/unit_tests/libs:${LD_LIBRARY_PATH}"
 
 # Re-export environment variables forwarded from the host. run_under_qnx.sh
-# writes them as a fragment of `export NAME='value'` lines: the shell in the
-# IFS cannot iterate a file line by line (its read builtin consumes the whole
-# file on the first call), so a read loop would only export the first variable.
+# writes them as shell-escaped export assignments. The shell in the IFS cannot
+# iterate a file line by line (its read builtin consumes the whole file on the
+# first call), so a read loop would only export the first variable.
 if [ -f /opt/tests/cc_test_qnx_env.sh ]; then
     . /opt/tests/cc_test_qnx_env.sh
 fi
