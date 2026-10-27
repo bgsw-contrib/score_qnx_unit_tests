@@ -79,46 +79,46 @@ qemu_setup_accel() {
 
 # Write selected host variables as shell-escaped exports at
 # <fsdev_path>/cc_test_qnx_env.sh, sourced by prepare_test.sh in the guest.
-# Capture them in an inner function before its locals can shadow caller variables.
+# All caller variables are collected before output handling begins so helper
+# assignments cannot shadow caller values through Bash's dynamic scoping.
 qemu_write_forwarded_env() {
-    __qnx_write_forwarded_env_impl "$@"
-}
+    local -a qnx_forward_saved_names=() qnx_forward_saved_values=() qnx_forward_saved_set=()
+    local qnx_forward_loop_name qnx_forward_loop_index=0
 
-__qnx_write_forwarded_env_impl() {
-    local destination="$1"
-    local -a names=() values=() set_flags=()
-    local requested index=0 env_file="${destination}/cc_test_qnx_env.sh"
+    IFS=, read -r -a qnx_forward_saved_names <<< "${QNX_FORWARD_ENV:-}"
 
-    IFS=, read -r -a names <<< "${QNX_FORWARD_ENV:-}"
-    for requested in "${names[@]}"; do
-        [[ -n "${requested}" ]] || continue
-        if [[ ! "${requested}" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
-            echo "ERROR: Invalid environment variable name '${requested}' in QNX_FORWARD_ENV" >&2
-            rm -f "${env_file}"
+    # Validate requested names before reading values or writing the file.
+    for qnx_forward_loop_name in "${qnx_forward_saved_names[@]}"; do
+        [[ -n "${qnx_forward_loop_name}" ]] || continue
+        if [[ ! "${qnx_forward_loop_name}" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+            echo "ERROR: Invalid environment variable name '${qnx_forward_loop_name}' in QNX_FORWARD_ENV" >&2
+            rm -f "$1/cc_test_qnx_env.sh"
             return 1
         fi
     done
-    for requested in "${names[@]}"; do
-        [[ -n "${requested}" ]] || continue
-        if [[ -v "${requested}" ]]; then
-            set_flags+=(1)
-            values+=("${!requested}")
+
+    # Capture caller values before later loops reuse any variable names.
+    for qnx_forward_loop_name in "${qnx_forward_saved_names[@]}"; do
+        [[ -n "${qnx_forward_loop_name}" ]] || continue
+        if [[ -v "${qnx_forward_loop_name}" ]]; then
+            qnx_forward_saved_set+=(1)
+            qnx_forward_saved_values+=("${!qnx_forward_loop_name}")
         else
-            set_flags+=(0)
-            values+=("")
+            qnx_forward_saved_set+=(0)
+            qnx_forward_saved_values+=("")
         fi
     done
 
-    rm -f "${env_file}"
-    if ((${#names[@]} > 0)); then
-        : > "${env_file}"
-        for requested in "${names[@]}"; do
-            [[ -n "${requested}" ]] || continue
-            if [[ "${set_flags[index]}" == 1 ]]; then
+    rm -f "$1/cc_test_qnx_env.sh"
+    if ((${#qnx_forward_saved_names[@]} > 0)); then
+        : > "$1/cc_test_qnx_env.sh"
+        for qnx_forward_loop_name in "${qnx_forward_saved_names[@]}"; do
+            [[ -n "${qnx_forward_loop_name}" ]] || continue
+            if [[ "${qnx_forward_saved_set[qnx_forward_loop_index]}" == 1 ]]; then
                 # printf %q avoids command substitution, preserving trailing newlines.
-                printf 'export %s=%q\n' "${requested}" "${values[index]}" >> "${env_file}"
+                printf 'export %s=%q\n' "${qnx_forward_loop_name}" "${qnx_forward_saved_values[qnx_forward_loop_index]}" >> "$1/cc_test_qnx_env.sh"
             fi
-            ((index += 1))
+            ((qnx_forward_loop_index += 1))
         done
     fi
 }

@@ -34,26 +34,42 @@ assert_file_content() {
 # Round-trip values with trailing newlines, shell metacharacters, helper-name
 # collisions, empty strings, and the old unset-marker text.
 requested_names=(
-    _qnx_names
-    _qnx_values
-    _qnx_set
-    _qnx_requested
-    _qnx_destination
-    _qnx_output
-    _qnx_index
+    qnx_forward_names
+    qnx_forward_values
+    qnx_forward_is_set
+    qnx_forward_index
+    qnx_forward_name
+    forward_names
+    forward_values
+    forward_is_set
+    forward_name
+    forward_index
+    names
+    values
+    set_flags
+    requested
+    index
     _qnx_common_name
     TRAILING_NEWLINES
     QUOTED_VALUE
     EMPTY_VALUE
     SENTINEL_VALUE
 )
-_qnx_names="caller names value"
-_qnx_values=$'final line\n\n'
-_qnx_set="__QNX_FORWARD_ENV_UNSET__"
-_qnx_requested="requested name"
-_qnx_destination="caller path"
-_qnx_output="caller env file"
-_qnx_index="index value"
+qnx_forward_names="caller names value"
+qnx_forward_values=$'final line\n\n'
+qnx_forward_is_set="__QNX_FORWARD_ENV_UNSET__"
+qnx_forward_index="caller index"
+qnx_forward_name="requested name"
+forward_names="wrapper names"
+forward_values="wrapper values"
+forward_is_set="wrapper set"
+forward_name="wrapper name"
+forward_index="wrapper index"
+names="caller names"
+values="caller values"
+set_flags="caller flags"
+requested="caller requested"
+index="index value"
 _qnx_common_name="caller private-name value"
 TRAILING_NEWLINES=$'value\n\n\n'
 QUOTED_VALUE="single' quote; \$(false) \\\\ \$HOME"
@@ -78,13 +94,21 @@ bash -c '
             exit 1
         }
     }
-    assert_equal _qnx_names "caller names value"
-    assert_equal _qnx_values $'"'"'final line\n\n'"'"'
-    assert_equal _qnx_set "__QNX_FORWARD_ENV_UNSET__"
-    assert_equal _qnx_requested "requested name"
-    assert_equal _qnx_destination "caller path"
-    assert_equal _qnx_output "caller env file"
-    assert_equal _qnx_index "index value"
+    assert_equal qnx_forward_names "caller names value"
+    assert_equal qnx_forward_values $'"'"'final line\n\n'"'"'
+    assert_equal qnx_forward_is_set "__QNX_FORWARD_ENV_UNSET__"
+    assert_equal qnx_forward_index "caller index"
+    assert_equal qnx_forward_name "requested name"
+    assert_equal forward_names "wrapper names"
+    assert_equal forward_values "wrapper values"
+    assert_equal forward_is_set "wrapper set"
+    assert_equal forward_name "wrapper name"
+    assert_equal forward_index "wrapper index"
+    assert_equal names "caller names"
+    assert_equal values "caller values"
+    assert_equal set_flags "caller flags"
+    assert_equal requested "caller requested"
+    assert_equal index "index value"
     assert_equal _qnx_common_name "caller private-name value"
     assert_equal TRAILING_NEWLINES $'"'"'value\n\n\n'"'"'
     assert_equal QUOTED_VALUE "single'"'"' quote; \$(false) \\\\ \$HOME"
