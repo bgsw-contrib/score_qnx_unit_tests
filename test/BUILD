@@ -18,8 +18,8 @@ load("@score_qnx_unit_tests//:defs.bzl", "cc_test_qnx", "rust_test_qnx")
 sh_test(
     name = "qemu_common_test",
     srcs = ["qemu_common_test.sh"],
-    args = ["$(location //src:common/qemu_common.sh)"],
-    data = ["//src:common/qemu_common.sh"],
+    args = ["$(location @score_qnx_unit_tests//src:common/qemu_common.sh)"],
+    data = ["@score_qnx_unit_tests//src:common/qemu_common.sh"],
 )
 
 cc_test(
