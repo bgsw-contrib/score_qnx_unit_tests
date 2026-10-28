@@ -10,7 +10,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 # *******************************************************************************
-load("@score_tooling//:defs.bzl", "copyright_checker", "use_format_targets")
+load("@score_tooling//:defs.bzl", "copyright_checker")
+load("@score_tooling//third_party/format:macros.bzl", "use_format_targets")
 
 copyright_checker(
     name = "copyright",
@@ -21,8 +22,8 @@ copyright_checker(
         "test",
         "third_party",
         "tools",
-        "//:BUILD",
-        "//:MODULE.bazel",
+        "BUILD",
+        "MODULE.bazel",
     ],
     config = "@score_tooling//cr_checker/resources:config",
     template = "@score_tooling//cr_checker/resources:templates",
